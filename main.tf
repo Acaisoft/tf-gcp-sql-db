@@ -32,6 +32,10 @@ resource "google_sql_database_instance" "default" {
   }
 
   replica_configuration = ["${var.replica_configuration}"]
+
+  lifecycle {
+    ignore_changes = ["settings.0.ip_configuration"]
+  }
 }
 
 resource "google_sql_database" "default" {
@@ -47,11 +51,15 @@ resource "random_id" "user-password" {
   byte_length = 8
 }
 
-resource "google_sql_user" "default" {
+resource "google_sql_user" "users" {
   count    = "${lookup(var.db_instance, "master_instance_name", "") == "" ? 1 : 0}"
   name     = "${var.db_user["name"]}"
   project  = "${var.provider["project"]}"
   instance = "${google_sql_database_instance.default.name}"
-  host     = "${lookup(var.db_user, "host", "%")}"
+  host     = "${lookup(var.db_user, "host", "")}"
   password = "${lookup(var.db_user, "password", random_id.user-password.hex)}"
+
+  lifecycle {
+    ignore_changes = ["password"]
+  }
 }
