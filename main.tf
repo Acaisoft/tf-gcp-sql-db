@@ -35,20 +35,22 @@ resource "google_sql_database_instance" "default" {
 
   lifecycle {
     ignore_changes = ["settings.0.ip_configuration"]
+    ignore_changes = ["settings.0.location_preference"]
   }
 }
 
 resource "google_sql_database" "default" {
-  count     = "${lookup(var.db_instance, "master_instance_name", "") == "" ? 1 : 0}"
-  name      = "${var.default_db["name"]}"
+  count     = "${length(var.db_list)}"
+  name      = "${element(var.db_list, count.index)}"
   project   = "${var.provider["project"]}"
   instance  = "${google_sql_database_instance.default.name}"
   charset   = "${lookup(var.default_db, "charset", "")}"
   collation = "${lookup(var.default_db, "collation", "en_US.UTF8")}"
 }
 
-resource "random_id" "user-password" {
-  byte_length = 8
+resource "random_string" "user-password" {
+  length = 16
+  special = false
 }
 
 resource "google_sql_user" "users" {
@@ -57,7 +59,7 @@ resource "google_sql_user" "users" {
   project  = "${var.provider["project"]}"
   instance = "${google_sql_database_instance.default.name}"
   host     = "${lookup(var.db_user, "host", "")}"
-  password = "${lookup(var.db_user, "password", random_id.user-password.hex)}"
+  password = "${lookup(var.db_user, "password", random_string.user-password.result)}"
 
   lifecycle {
     ignore_changes = ["password"]

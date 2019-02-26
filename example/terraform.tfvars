@@ -33,6 +33,10 @@ default_db = {
   name = "default"
 }
 
+db_list = [
+  "db-name",
+]
+
 db_user = {
   name = "default"
 }

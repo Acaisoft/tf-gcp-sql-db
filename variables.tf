@@ -39,6 +39,11 @@ variable "default_db" {
   description = "Default database settings."
 }
 
+variable "db_list" {
+  type        = "list"
+  description = "List of databases names to crate."
+}
+
 # Parameters authorized:
 # name - the name of the default user (mandatory)
 # host - the host for the default user (default: "%")
